@@ -32,6 +32,11 @@ const nextConfig: NextConfig = {
           },
         ],
       },
+      {
+        // The service worker must never be cached, so board updates are picked up.
+        source: "/sw.js",
+        headers: [{ key: "Cache-Control", value: "no-cache, no-store, must-revalidate" }],
+      },
     ];
   },
 };

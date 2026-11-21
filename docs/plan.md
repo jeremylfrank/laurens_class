@@ -1,6 +1,6 @@
 # Classcade plan
 
-Status: step 1 (foundation) in review. Written after reading `prototypes/mrs-frank-games.html`
+Status: step 1 (foundation) merged; step 2 (engine + Summit Math) in review. Written after reading `prototypes/mrs-frank-games.html`
 and `prototypes/summit-race.html` in full, and skimming the school portal mockup, which
 we are not using.
 
@@ -98,12 +98,12 @@ You asked me to say so. None of these block step 1 or 2.
 
 ## 4. Order of work
 
-1. **Foundation (this PR).** Next.js + TypeScript strict, ESLint, Prettier, Vitest,
+1. **Foundation (done).** Next.js + TypeScript strict, ESLint, Prettier, Vitest,
    Playwright at 1920x1080 with touch, CI (typecheck, lint, format, unit, build, e2e),
    Dependabot, PR template with privacy checklist, strict Content Security Policy,
    self hosted fonts, seeded RNG. A placeholder home page.
    _Deploy preview:_ needs a Vercel account connected to this repo (steps in README).
-2. **Engine + Summit Math.** Engine types, scheduler, adaptive levels, the national parks
+2. **Engine + Summit Math (this PR).** Engine types, scheduler, adaptive levels, the national parks
    theme as a separate module, the board shell (home, stage, trail, badges, teams, read
    aloud, settings), Summit Math with regrouping distractors (forgot to regroup, wrote
    the whole column sum, subtracted the smaller digit from the larger, added instead of

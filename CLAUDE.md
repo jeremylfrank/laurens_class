@@ -45,7 +45,14 @@ If a feature doesn't serve one of these, skip it.
 ## Layout
 
 - `src/app/` Next.js App Router routes
-- `src/lib/` shared utilities (seeded RNG)
+- `src/engine/` pure game engine: types, review queue, adaptive level, round/team logic
+- `src/games/<id>/` one folder per game: `definition.ts` (pure), its tests, and its prompt view
+- `src/games/registry.ts` the list of games on the board
+- `src/themes/national-parks/` theme tokens and art. Games never hard code colors.
+- `src/board/` the board UI: home, game stage, race, touch test, settings, miss animations
+- `src/data/` the attempt log (on the board now, synced in step 3)
+- `src/lib/` shared utilities (seeded RNG, safe local storage)
+- `public/sw.js` service worker so the board works offline
 - `e2e/` Playwright tests, run at 1920x1080 with touch
 - `prototypes/` the original single file prototypes, for reference only. Not built, not linted.
 - `docs/plan.md` the plan; `docs/privacy.md` every stored field and why

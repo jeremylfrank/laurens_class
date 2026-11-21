@@ -3,24 +3,39 @@
 This file must list every piece of data the app stores. Any PR that adds a field updates
 this file in the same PR.
 
-## Today (step 1)
+## Today (step 2): on the board only
 
-The app stores **nothing**. No cookies, no browser storage, no database, no analytics, no
-third party requests. Fonts are served from our own site. The Content Security Policy
-blocks scripts, fonts and connections to other sites.
+Everything below lives in the browser storage of the board's computer (keys start with
+`classcade:`). Nothing is sent anywhere. There are no cookies, no analytics and no third
+party requests; the Content Security Policy blocks connections to other sites.
+
+| Key             | What it holds                                                                                                                                                                                              | Why                                                                                             |
+| --------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------- |
+| `settings`      | Board title (max 40 characters), sound on/off, slow voice, team mode on/off, two team names (max 14 characters each)                                                                                       | Teacher settings                                                                                |
+| `progress`      | Trail stop (0 to 9), badge count, two team scores                                                                                                                                                          | The class's shared reward                                                                       |
+| `levels`        | For each game mode: current level, the last few right/wrong results (true/false), the last day played                                                                                                      | Adaptive difficulty for the whole class                                                         |
+| `review`        | For each game mode: up to 20 missed problems (numbers only, e.g. 38 + 25), when each comes back, and how many times it has been answered right since                                                       | Missed items come back                                                                          |
+| `rounds:<mode>` | A count of rounds played                                                                                                                                                                                   | Timing for when missed items come back                                                          |
+| `mode:<game>`   | Which mode was last picked                                                                                                                                                                                 | Convenience                                                                                     |
+| `attempts`      | One row per tap: time, a random session id, game, mode, play style (board, teams, split), the problem (e.g. `add:38+25`), the standard, right or wrong, the mistake if wrong, and team 0 or 1 in team play | The teacher page in step 3. Kept at most 13 months and at most 3,000 rows, oldest removed first |
+
+**No names of students are stored anywhere.** Results belong to the class or to a team.
+
+The service worker also keeps a copy of the app itself (the page, scripts, styles and
+fonts) so the board loads with no internet. It never stores answers.
+
+Read aloud only uses voices installed on the computer, so question text is never sent to
+an online speech service.
+
+**To wipe the board:** in the browser's settings, clear site data for this site. Teacher
+settings also has buttons to reset scores, badges and levels.
 
 ## Planned
 
-### On the board (browser storage, step 2)
+### Trail Leader (name picker, step 4)
 
-| Data                                      | Why                        | Leaves the board?                                                |
-| ----------------------------------------- | -------------------------- | ---------------------------------------------------------------- |
-| Sound, read aloud speed, team mode on/off | Settings                   | Synced in step 3                                                 |
-| Team names (max 14 characters)            | Shown in team mode         | Synced in step 3                                                 |
-| Current level per skill                   | Adaptive difficulty        | Synced in step 3                                                 |
-| Trail progress and badge count            | The class's shared reward  | Synced in step 3                                                 |
-| Queue of unsynced results                 | So the board works offline | Yes, then deleted locally                                        |
-| Trail Leader class list                   | Name picker                | **No**, unless Lauren decides otherwise (see plan.md, section 3) |
+The class list for the name picker stays on the board only, unless Lauren decides
+otherwise (see plan.md, section 3).
 
 ### In the database (Supabase, step 3)
 
