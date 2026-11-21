@@ -3,6 +3,8 @@
 Touchscreen learning games for a 2nd grade classroom, played on an interactive
 projector. National parks theme: every right answer moves the class's hiker up the trail.
 
+Live at https://classcade-app.vercel.app (pull requests also get their own preview links).
+
 See `docs/plan.md` for the plan and `docs/privacy.md` for what data is stored.
 
 ## Run it on your computer
