@@ -1,6 +1,6 @@
 # Classcade plan
 
-Status: step 1 (foundation) merged; step 2 (engine + Summit Math) in review. Written after reading `prototypes/mrs-frank-games.html`
+Status: steps 1 and 2 merged; step 3 (accounts and the "this week" page) in review. Written after reading `prototypes/mrs-frank-games.html`
 and `prototypes/summit-race.html` in full, and skimming the school portal mockup, which
 we are not using.
 
@@ -103,13 +103,13 @@ You asked me to say so. None of these block step 1 or 2.
    Dependabot, PR template with privacy checklist, strict Content Security Policy,
    self hosted fonts, seeded RNG. A placeholder home page.
    _Deploy preview:_ needs a Vercel account connected to this repo (steps in README).
-2. **Engine + Summit Math (this PR).** Engine types, scheduler, adaptive levels, the national parks
+2. **Engine + Summit Math (done).** Engine types, scheduler, adaptive levels, the national parks
    theme as a separate module, the board shell (home, stage, trail, badges, teams, read
    aloud, settings), Summit Math with regrouping distractors (forgot to regroup, wrote
    the whole column sum, subtracted the smaller digit from the larger, added instead of
    subtracted, off by one when counting on) and base ten / number line miss animations,
    team mode with steals, split screen race, touch test. Offline, no login.
-3. **Lauren's account.** Supabase schema with row level security and a test that proves
+3. **Lauren's account (this PR).** Supabase schema with row level security and a test that proves
    one teacher can't see another's rows (runs against a local Supabase in CI), email
    allowlist, Google sign in, settings and custom content synced, results synced from the
    offline queue, 13 month cleanup job, hard delete, the "this week" page, keep alive.
@@ -123,3 +123,10 @@ You asked me to say so. None of these block step 1 or 2.
 3. Junior Ranger Quiz: rebuild as a habitats science game, or keep it as untracked trivia?
 4. Does the class list need to leave the board (point 1 above)?
 5. Will she sign in with a school or a personal Google account?
+
+## 6. Decisions so far
+
+- **Class list stays on the board.** Results are saved per team or for the whole class, never per child. The `students` table exists but is unused. (Nov 2026)
+- **Lauren signs in with her personal Google account** for now. Her school account will be tested later; school admins may block outside apps.
+- **Jeremy is the admin.** Admins manage who can sign in and can read (not change) every teacher's class results. Any future teacher should be told this.
+- **Custom content** (Lauren's own word lists and questions) has its table but no screen yet; it arrives with the first game that uses it (Wildlife Words).

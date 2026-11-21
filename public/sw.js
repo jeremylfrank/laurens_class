@@ -3,7 +3,7 @@
    - Pages: try the network first (to pick up updates), fall back to the saved copy.
    - Built files (/_next/static): they never change once built, so serve the saved copy.
    Only our own site is ever cached; nothing else is fetched. */
-const CACHE = "classcade-v1";
+const CACHE = "classcade-v2";
 
 self.addEventListener("install", (event) => {
   event.waitUntil(
@@ -37,12 +37,14 @@ self.addEventListener("fetch", (event) => {
     event.respondWith(
       (async () => {
         const cache = await caches.open(CACHE);
+        // Cache by page path only (never the query string, which can hold a sign in code).
+        const page = url.pathname;
         try {
           const res = await fetch(req);
-          if (res.ok) await cache.put("/", res.clone());
+          if (res.ok) await cache.put(page, res.clone());
           return res;
         } catch {
-          return (await cache.match("/")) ?? Response.error();
+          return (await cache.match(page)) ?? (await cache.match("/")) ?? Response.error();
         }
       })(),
     );

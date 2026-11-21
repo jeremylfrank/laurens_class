@@ -36,7 +36,7 @@ test("results are logged on the board without names", async ({ page }) => {
   const log = await page.evaluate(() => JSON.parse(localStorage.getItem("classcade:attempts") ?? "[]"));
   expect(log).toHaveLength(1);
   expect(Object.keys(log[0]).sort()).toEqual(
-    ["at", "correct", "game", "itemKey", "mode", "play", "session", "skill"].sort(),
+    ["at", "correct", "game", "id", "itemKey", "mode", "play", "session", "skill"].sort(),
   );
   expect(log[0].skill).toBe("2.NBT.B.5");
 });
