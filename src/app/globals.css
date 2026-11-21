@@ -1,50 +1,46 @@
-/* National parks theme tokens, ported from prototypes/mrs-frank-games.html.
-   Step 2 moves these into src/themes/national-parks so games never hard code colors. */
-:root {
-  --sky1: #86c9d9;
-  --sky2: #fbd7a1;
-  --m3: #3c6b55;
-  --m4: #24533f;
-  --ink: #1b2a22;
-  --card: #fffdf7;
-  --wood: #7a4a2a;
-  --wood2: #8d5a35;
-  --edge: #4a2a14;
-  --woodInk: #fff1d6;
-  --accent: #e8692b;
-  --gold: #f6c344;
-  --shadow: rgba(27, 42, 34, 0.22);
-  --font-sign: "Alfa Slab One", Rockwell, Georgia, serif;
-  --font-body: "Nunito Variable", Nunito, system-ui, sans-serif;
-}
-
+/* Base styles. Colors and fonts come from the theme (src/themes/national-parks/theme.css). */
 *,
 *::before,
 *::after {
   box-sizing: border-box;
   min-width: 0;
 }
-
 html,
 body {
   height: 100%;
 }
-
 body {
   margin: 0;
   background: linear-gradient(var(--sky1), var(--sky2) 70%);
   background-attachment: fixed;
   color: var(--ink);
   font: 700 17px/1.4 var(--font-body);
+  overflow-x: clip;
   user-select: none;
   -webkit-user-select: none;
 }
-
+button,
+input {
+  font: inherit;
+  color: inherit;
+}
+button {
+  border: 0;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+  background: none;
+}
+button:focus-visible,
+input:focus-visible {
+  outline: 4px solid var(--gold);
+  outline-offset: 3px;
+}
 .slab {
   font-family: var(--font-sign);
   font-weight: 400;
+  letter-spacing: 0.01em;
 }
-
 .sign {
   display: inline-block;
   background: linear-gradient(var(--wood2), var(--wood));
@@ -55,4 +51,5 @@ body {
     inset 0 0 0 4px rgba(255, 241, 214, 0.35),
     0 10px 0 var(--edge),
     0 18px 28px var(--shadow);
+  position: relative;
 }

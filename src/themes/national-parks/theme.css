@@ -1,0 +1,35 @@
+/* National parks theme. Games and board components use only these tokens.
+   Ported from prototypes/mrs-frank-games.html. Light only: projectors wash out dark colors. */
+:root {
+  --sky1: #86c9d9;
+  --sky2: #fbd7a1;
+  --m1: #a597c9;
+  --m2: #6a86ad;
+  --m3: #3c6b55;
+  --m4: #24533f;
+  --sun: #f6a53b;
+  --snow: #fff;
+  --ink: #1b2a22;
+  --card: #fffdf7;
+  --soft: #eef3ea;
+  --wood: #7a4a2a;
+  --wood2: #8d5a35;
+  --edge: #4a2a14;
+  --woodInk: #fff1d6;
+  --accent: #e8692b;
+  --accEdge: #b84816;
+  --gold: #f6c344;
+  --goldInk: #3a2410;
+  --ok: #2e9e55;
+  --miss: #c0392b;
+  --shadow: rgba(27, 42, 34, 0.22);
+  --team0: #e8692b;
+  --team0Edge: #b84816;
+  --team1: #2f7cf6;
+  --team1Edge: #1d55b0;
+  --block-ten: #b06b33;
+  --block-one: #e8b57a;
+  --block-edge: #4a2a14;
+  --font-sign: "Alfa Slab One", Rockwell, Georgia, serif;
+  --font-body: "Nunito Variable", Nunito, system-ui, sans-serif;
+}
