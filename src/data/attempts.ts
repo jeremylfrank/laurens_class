@@ -3,10 +3,12 @@ import { readStored, writeStored } from "@/lib/storage";
 import type { PlayStyle } from "@/engine/types";
 
 /**
- * Every answer tapped at the board, kept on the board until step 3 syncs it to Lauren's account.
+ * Every answer tapped at the board waits here until it is saved to the teacher's account.
  * No names: a result belongs to the class, or to team 0 / team 1.
+ * If nobody signs in, results stay on the board (at most 13 months, at most 3,000 rows).
  */
 export interface AttemptRecord {
+  id?: string;
   at: string;
   session: string;
   game: string;
@@ -30,17 +32,32 @@ export function prune(list: AttemptRecord[], now: number): AttemptRecord[] {
 
 export function logAttempt(record: AttemptRecord): void {
   const list = readStored(KEY, EMPTY);
-  writeStored(KEY, prune([...list, record], Date.now()));
+  writeStored(KEY, prune([...list, { id: newId(), ...record }], Date.now()));
 }
 
 export function readAttempts(): AttemptRecord[] {
   return readStored(KEY, EMPTY);
 }
 
-export function newSessionId(): string {
-  try {
-    return crypto.randomUUID();
-  } catch {
-    return `${Date.now()}-${Math.floor(Math.random() * 1e9)}`;
-  }
+/** After a successful save, forget those rows on the board. */
+export function removeAttempts(ids: Set<string>): void {
+  writeStored(
+    KEY,
+    readStored(KEY, EMPTY).filter((a) => !a.id || !ids.has(a.id)),
+  );
 }
+
+/** Give ids to rows saved before ids existed, so they can be synced safely. */
+export function ensureIds(): AttemptRecord[] {
+  const list = readStored(KEY, EMPTY);
+  if (list.every((a) => a.id)) return list;
+  const fixed = list.map((a) => (a.id ? a : { ...a, id: newId() }));
+  writeStored(KEY, fixed);
+  return fixed;
+}
+
+export function newId(): string {
+  return crypto.randomUUID();
+}
+
+export const newSessionId = newId;

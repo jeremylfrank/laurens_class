@@ -3,6 +3,15 @@ import { useEffect, useRef, useState } from "react";
 import { removeStored } from "@/lib/storage";
 import { DEFAULT_PROGRESS, useProgress, type Settings } from "./settings";
 import { hasLocalVoice, hush } from "./sound";
+import { useSyncStatus } from "@/data/sync";
+
+const SYNC_TEXT = {
+  "not-set-up": "Results save on this board. Accounts aren't set up yet.",
+  "signed-out": "Results save on this board. Sign in on the Teacher page to save them to your account.",
+  offline: "No internet right now. Results are kept on this board and saved when it's back.",
+  saved: "Results are saving to your account.",
+  error: "Couldn't reach your account just now. Results are kept on this board and will try again.",
+} as const;
 
 interface Props {
   settings: Settings;
@@ -15,6 +24,7 @@ export function SettingsPanel({ settings, onChange, onClose }: Props) {
   const [done, setDone] = useState<string | null>(null);
   const [voiceOk] = useState(() => hasLocalVoice());
   const closeRef = useRef<HTMLButtonElement>(null);
+  const sync = useSyncStatus();
   const set = (patch: Partial<Settings>) => onChange({ ...settings, ...patch });
 
   useEffect(() => {
@@ -128,7 +138,11 @@ export function SettingsPanel({ settings, onChange, onClose }: Props) {
             {done}
           </p>
         ) : null}
-        <p className="note">Settings and results save on this board. Nothing leaves the classroom yet.</p>
+        <p className="note" data-testid="sync-status">
+          {SYNC_TEXT[sync.state]}
+          {sync.waiting > 0 ? ` ${sync.waiting} answers waiting on this board.` : ""}{" "}
+          <a href="/teacher">Teacher page</a>
+        </p>
         <button ref={closeRef} className="btn main" onClick={onClose}>
           Done
         </button>

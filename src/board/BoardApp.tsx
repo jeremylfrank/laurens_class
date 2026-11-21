@@ -11,6 +11,7 @@ import { attachCanvas, burst } from "./fx";
 import { hush, say } from "./sound";
 import { FullIcon, GearIcon, HomeIcon, MuteIcon, SpeakIcon } from "./icons";
 import { useProgress, useSettings } from "./settings";
+import { useBoardSync } from "@/data/sync";
 
 type View = { name: "home" } | { name: "game"; id: string } | { name: "race" } | { name: "touch" };
 const HOME: View = { name: "home" };
@@ -30,6 +31,7 @@ function Board() {
   const [settings, setSettings] = useSettings();
   const [progress] = useProgress();
   const [showSettings, setShowSettings] = useState(false);
+  useBoardSync();
   const [cheer, setCheer] = useState(false);
   const game = view.name === "game" ? findGame(view.id) : view.name === "race" ? GAMES[0] : undefined;
   const [modeId, setModeId] = usePersisted<string>(
