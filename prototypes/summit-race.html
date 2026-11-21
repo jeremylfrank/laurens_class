@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no">
+<title>Summit Race</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Alfa+Slab+One&family=Nunito:wght@700;800;900&display=swap" rel="stylesheet">
+<style>
+/* VOICE: loud, friendly race day on the classroom board; two teams, two kids at the board at once
+   IDEA: two trails up one mountain, Bears on the left, Eagles on the right, racing to the summit flag
+   PICTURE: each half is its own trail with a climbing hiker, a big problem and three fat answer buttons
+   COLOUR and TYPE: sunset orange team vs lake blue team on a mountain sky; Alfa Slab One signs, Nunito numbers
+   LAYOUT: split screen down the middle, mirrored, nothing shared in the middle except the summit */
+:root{--sky1:#86c9d9;--sky2:#fbd7a1;--ink:#1b2a22;--card:#fffdf7;--wood:#7a4a2a;--edge:#4a2a14;--cream:#fff1d6;--gold:#f6c344;--ok:#2e9e55;--bad:#d9412b;--a:#e8692b;--aE:#b84816;--b:#2f7cf6;--bE:#1d56b3}
+*{box-sizing:border-box;min-width:0}
+html,body{height:100%;margin:0}
+body{background:linear-gradient(var(--sky1),var(--sky2));color:var(--ink);font:800 18px/1.3 Nunito,system-ui,sans-serif;overflow:hidden;user-select:none;-webkit-user-select:none;touch-action:none;overscroll-behavior:none}
+button{font:inherit;color:inherit;border:0;background:none;cursor:pointer;touch-action:none;-webkit-tap-highlight-color:transparent}
+.slab{font-family:"Alfa Slab One",Rockwell,Georgia,serif;font-weight:400}
+.hide{display:none!important}
+.scene{position:fixed;inset:0;pointer-events:none}
+.scene svg{width:100%;height:100%}
+.screen{position:fixed;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3vh;padding:3vh 3vw}
+.sign{background:linear-gradient(#8d5a35,var(--wood));color:var(--cream);border:6px solid var(--edge);border-radius:22px;box-shadow:inset 0 0 0 4px rgba(255,241,214,.3),0 10px 0 var(--edge)}
+.title{padding:2vh 4vw;text-align:center}
+.title h1{margin:0;font-size:clamp(44px,7vw,110px);line-height:1}
+.title p{margin:8px 0 0;font-size:clamp(18px,2vw,30px)}
+.menu{display:flex;gap:3vw;flex-wrap:wrap;justify-content:center}
+.big{min-height:14vh;min-width:24vw;padding:2vh 3vw;border-radius:28px;font-size:clamp(26px,3.4vw,52px);color:#fff;box-shadow:0 10px 0 var(--edge)}
+.big.go{background:var(--a);box-shadow:0 10px 0 var(--aE)}
+.big.alt{background:#3c6b55;box-shadow:0 10px 0 #24533f}
+.big:active{transform:translateY(6px)}
+.levels{display:flex;gap:10px;background:var(--card);padding:8px;border-radius:999px;box-shadow:0 6px 0 rgba(0,0,0,.2)}
+.levels button{min-height:64px;padding:6px 26px;border-radius:999px;font-size:clamp(18px,1.8vw,26px)}
+.levels button[aria-pressed=true]{background:var(--ink);color:#fff}
+/* race */
+.race{position:fixed;inset:0;display:grid;grid-template-columns:1fr 1fr}
+.half{position:relative;display:grid;grid-template-columns:minmax(0,1fr) clamp(70px,8vw,130px);grid-template-rows:auto 1fr auto;padding:2vh 1.6vw;gap:1.6vh}
+.half.R{grid-template-columns:clamp(70px,8vw,130px) minmax(0,1fr)}
+.half.R .trailcol{grid-column:1;grid-row:1/4}.half.R .team,.half.R .prob,.half.R .ans{grid-column:2}
+.half.L .trailcol{grid-column:2;grid-row:1/4}
+.half.L{border-right:5px dashed rgba(74,42,20,.45)}
+.team{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:1vh 1.4vw;border-radius:20px;color:#fff;font-size:clamp(24px,3vw,46px)}
+.L .team{background:var(--a);box-shadow:0 7px 0 var(--aE)}.R .team{background:var(--b);box-shadow:0 7px 0 var(--bE)}
+.team b{font-family:Nunito,sans-serif;font-weight:900;font-variant-numeric:tabular-nums}
+.prob{display:grid;place-items:center;background:var(--card);border-radius:28px;box-shadow:0 9px 0 rgba(27,42,34,.22);font-size:clamp(54px,8.2vw,150px);font-weight:900;font-variant-numeric:tabular-nums;white-space:nowrap;line-height:1}
+.prob .q{display:inline-grid;place-items:center;min-width:1.2em;border-radius:18px;background:var(--gold);color:#3a2410}
+.ans{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:1.2vw}
+.ans button{min-height:clamp(110px,22vh,240px);border-radius:26px;background:var(--card);font-size:clamp(46px,6.4vw,120px);font-weight:900;font-variant-numeric:tabular-nums;box-shadow:0 9px 0 rgba(27,42,34,.22);transition:transform .08s}
+.ans button.down{transform:scale(.94)}
+.ans button.right{background:var(--ok);color:#fff;box-shadow:0 9px 0 #1f7a40}
+.ans button.wrong{background:var(--bad);color:#fff;animation:shake .4s}
+.half.locked .ans button:not(.wrong){opacity:.45}
+.trailcol{position:relative;background:var(--card);border-radius:999px;box-shadow:0 7px 0 rgba(27,42,34,.22);margin:0 .4vw}
+.trailcol .line{position:absolute;left:50%;top:9%;bottom:6%;border-left:7px dashed var(--wood);opacity:.5;transform:translateX(-50%)}
+.trailcol .flag{position:absolute;left:50%;top:1%;width:62%;transform:translateX(-50%)}
+.trailcol .hiker{position:absolute;left:50%;width:56%;transform:translate(-50%,50%);bottom:calc(6% + var(--p)*82%);transition:bottom .6s cubic-bezier(.3,1.4,.5,1)}
+.trailcol i{position:absolute;left:50%;width:16px;height:16px;border-radius:50%;background:var(--card);border:4px solid var(--wood);transform:translate(-50%,50%)}
+.trailcol i.done{background:var(--gold)}
+.mid{position:fixed;left:50%;top:1.6vh;transform:translateX(-50%);display:flex;gap:8px;z-index:3}
+.mid button{width:62px;height:62px;border-radius:50%;background:var(--card);box-shadow:0 5px 0 rgba(0,0,0,.25);display:grid;place-items:center}
+.mid svg{width:30px;height:30px}
+/* win + test */
+.win{position:fixed;inset:0;z-index:5;display:grid;place-items:center;background:rgba(20,30,25,.45)}
+.win .sign{padding:4vh 5vw;text-align:center;font-size:clamp(44px,7vw,110px);line-height:1.05}
+.win small{display:block;font:900 clamp(20px,2.4vw,36px) Nunito,sans-serif;margin:12px 0 22px}
+.win .menu .big{min-width:18vw}
+.touchtest{position:fixed;inset:0;z-index:4;background:#13261d;color:#fff}
+.touchtest .info{position:absolute;left:50%;top:5vh;transform:translateX(-50%);text-align:center;pointer-events:none}
+.touchtest .info b{display:block;font-size:clamp(60px,10vw,180px);line-height:1;color:var(--gold)}
+.touchtest .info span{font-size:clamp(20px,2.2vw,32px)}
+.touchtest .best{position:absolute;left:50%;bottom:16vh;transform:translateX(-50%);font-size:clamp(20px,2.2vw,32px);text-align:center;pointer-events:none;max-width:80vw}
+.touchtest .done{position:absolute;left:50%;bottom:4vh;transform:translateX(-50%);background:var(--a);color:#fff;border-radius:999px;padding:14px 40px;font-size:26px;box-shadow:0 6px 0 var(--aE)}
+.dot{position:absolute;width:150px;height:150px;margin:-75px 0 0 -75px;border-radius:50%;border:8px solid var(--gold);background:rgba(246,195,68,.25);pointer-events:none;display:grid;place-items:center;font-size:40px;font-weight:900;color:#fff}
+canvas#fx{position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-index:6}
+@keyframes shake{20%,60%{transform:translateX(-12px)}40%,80%{transform:translateX(12px)}}
+@media(prefers-reduced-motion:reduce){.ans button.wrong{animation:none}.trailcol .hiker{transition:none}}
+@media(orientation:portrait){.race{grid-template-columns:1fr;grid-template-rows:1fr 1fr}.half.L{border-right:0;border-bottom:5px dashed rgba(74,42,20,.45)}}
+</style>
+</head>
+<body>
+<div class="scene" aria-hidden="true"><svg viewBox="0 0 1600 900" preserveAspectRatio="xMidYMax slice"><circle cx="800" cy="260" r="120" fill="#f6a53b" opacity=".9"/><path d="M0 560 220 380 400 500 620 300 800 170 980 300 1200 480 1380 360 1600 520V900H0Z" fill="#a597c9"/><path d="M745 220 800 170 856 222 828 212 800 232 772 212Z" fill="#fff"/><path d="M0 680Q260 560 520 640T1080 620T1600 600V900H0Z" fill="#6a86ad"/><path d="M0 780Q400 700 800 770T1600 750V900H0Z" fill="#3c6b55"/></svg></div>
+
+<section class="screen" id="menu">
+<div class="sign title"><h1 class="slab">Summit Race</h1><p>Two teams. Two trails. First to the summit wins!</p></div>
+<div class="levels" role="group" aria-label="Level"><button data-l="0" aria-pressed="true">Facts to 10</button><button data-l="1" aria-pressed="false">Facts to 20</button><button data-l="2" aria-pressed="false">To 100</button></div>
+<div class="menu"><button class="big go slab" id="start">Start the race</button><button class="big alt slab" id="testBtn">Touch test</button></div>
+</section>
+
+<div class="race hide" id="race">
+<div class="half L" id="hL"><div class="team slab"><span>Bears</span><b id="sL">0</b></div><div class="prob" id="pL"></div><div class="ans" id="aL"></div><div class="trailcol" id="tL"></div></div>
+<div class="half R" id="hR"><div class="team slab"><span>Eagles</span><b id="sR">0</b></div><div class="prob" id="pR"></div><div class="ans" id="aR"></div><div class="trailcol" id="tR"></div></div>
+</div>
+<div class="mid hide" id="mid"><button id="quit" aria-label="Back to menu"><svg viewBox="0 0 24 24" fill="#1b2a22"><path d="M12 3 2 12h3v8h5v-6h4v6h5v-8h3z"/></svg></button></div>
+
+<div class="win hide" id="win"><div class="sign slab"><span id="winText"></span><small id="winSub"></small><div class="menu"><button class="big go slab" id="again">Race again</button><button class="big alt slab" id="toMenu">Menu</button></div></div></div>
+
+<div class="touchtest hide" id="test"><div class="info"><b id="tc">0</b><span>fingers on the board right now</span></div><div class="best" id="tbest">Have two or three kids touch the board at the same time.</div><button class="done slab" id="testDone">Done</button></div>
+<canvas id="fx"></canvas>
+
+<script>
+{
+const $=s=>document.querySelector(s);
+const rnd=n=>Math.floor(Math.random()*n);
+const pick=a=>a[rnd(a.length)];
+const shuffle=a=>{a=[...a];for(let i=a.length-1;i>0;i--){const j=rnd(i+1);[a[i],a[j]]=[a[j],a[i]]}return a};
+const GOAL=10,LOCK_MS=1200,calm=matchMedia('(prefers-reduced-motion: reduce)').matches;
+let level=0;try{level=+localStorage.getItem('race-level')||0}catch(e){}
+
+/* sound */
+let ac=null;
+function tone(fs,dur,type,pan){try{ac=ac||new(window.AudioContext||window.webkitAudioContext)();if(ac.state==='suspended')ac.resume();const t=ac.currentTime;fs.forEach((f,i)=>{const o=ac.createOscillator(),g=ac.createGain();let out=g;if(ac.createStereoPanner){const p=ac.createStereoPanner();p.pan.value=pan||0;g.connect(p);out=p}o.type=type;o.frequency.value=f;const s=t+i*dur;g.gain.setValueAtTime(.0001,s);g.gain.exponentialRampToValueAtTime(.2,s+.02);g.gain.exponentialRampToValueAtTime(.0001,s+dur*1.6);o.connect(g);out.connect(ac.destination);o.start(s);o.stop(s+dur*1.8)})}catch(e){}}
+function say(t){try{speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(t);u.rate=.95;speechSynthesis.speak(u)}catch(e){}}
+
+/* problems */
+function make(){let a,b,op;
+ if(level===0){op=pick(['+','-']);if(op==='+'){a=rnd(6);b=rnd(11-a)}else{a=1+rnd(10);b=rnd(a+1)}}
+ else if(level===1){op=pick(['+','-']);if(op==='+'){a=1+rnd(10);b=1+rnd(10)}else{a=6+rnd(15);b=1+rnd(Math.min(a,10))}}
+ else{op=pick(['+','-']);if(op==='+'){a=10+rnd(71);b=10+rnd(90-a)}else{a=20+rnd(80);b=10+rnd(a-9)}}
+ const ans=op==='+'?a+b:a-b,o=new Set([ans]);
+ for(const k of shuffle([ans+1,ans-1,ans+2,ans-2,ans+10,ans-10]))if(o.size<3&&k>=0)o.add(k);
+ return{text:`${a} ${op==='+'?'+':'−'} ${b}`,ans,opts:shuffle([...o])}}
+
+/* art */
+const HIKER=c=>`<svg class="hiker" viewBox="0 0 40 50"><path d="M31 17l5 31" stroke="#7a4a2a" stroke-width="2.5" stroke-linecap="round"/><rect x="21" y="16" width="9" height="15" rx="3" fill="#7a4a2a"/><rect x="11" y="15" width="14" height="19" rx="5" fill="${c}"/><path d="M15 33l-4 14M21 33l4 14" stroke="#1b2a22" stroke-width="4" stroke-linecap="round"/><circle cx="18" cy="9" r="6" fill="#f0c49a"/><ellipse cx="18" cy="5" rx="10" ry="2.4" fill="#5b7a3c"/><path d="M13 5q5-7 10 0" fill="#5b7a3c"/></svg>`;
+const FLAG='<svg class="flag" viewBox="0 0 40 52"><path d="M2 50 20 20 38 50Z" fill="#6a86ad"/><path d="M14 30 20 20 26 30 20 27Z" fill="#fff"/><path d="M20 20V2" stroke="#4a2a14" stroke-width="2.5"/><path d="M20 3h14l-4 5 4 5H20Z" fill="#f6c344"/></svg>';
+
+/* state */
+const T={L:{name:'Bears',color:'#e8692b',pan:-.7},R:{name:'Eagles',color:'#2f7cf6',pan:.7}};
+let over=false;
+function drawTrail(k){const t=T[k];$('#t'+k).innerHTML='<div class="line"></div>'+Array.from({length:GOAL},(_,i)=>`<i class="${i<t.score?'done':''}" style="bottom:calc(6% + ${(i+1)/GOAL}*82%)"></i>`).join('')+FLAG+HIKER(t.color);$('#t'+k).style.setProperty('--p',t.score/GOAL)}
+function newProb(k){const t=T[k];t.p=make();t.locked=false;$('#h'+k).classList.remove('locked');
+ $('#p'+k).innerHTML=`<span>${t.p.text} = <span class="q">?</span></span>`;
+ $('#a'+k).innerHTML=t.p.opts.map(v=>`<button data-v="${v}" aria-label="${v}">${v}</button>`).join('')}
+function start(){over=false;for(const k of['L','R']){T[k].score=0;$('#s'+k).textContent=0;drawTrail(k);newProb(k)}
+ $('#menu').classList.add('hide');$('#win').classList.add('hide');$('#race').classList.remove('hide');$('#mid').classList.remove('hide');say('Ready, set, climb!')}
+function toMenu(){over=true;$('#race').classList.add('hide');$('#mid').classList.add('hide');$('#win').classList.add('hide');$('#menu').classList.remove('hide')}
+
+/* answers use pointerdown so two kids can tap at the same moment */
+function onTap(k,e){const b=e.target.closest('button');if(!b||over)return;e.preventDefault();const t=T[k];if(t.locked)return;
+ b.classList.add('down');setTimeout(()=>b.classList.remove('down'),120);
+ if(+b.dataset.v===t.p.ans){t.locked=true;b.classList.add('right');t.score++;$('#s'+k).textContent=t.score;tone([523,659,784],.08,'triangle',t.pan);drawTrail(k);burstEl(b,40);
+  if(t.score>=GOAL){win(k);return}setTimeout(()=>{if(!over)newProb(k)},450)}
+ else{t.locked=true;b.classList.add('wrong');$('#h'+k).classList.add('locked');tone([240,180],.12,'sine',t.pan);
+  setTimeout(()=>{if(over)return;b.classList.remove('wrong');$('#h'+k).classList.remove('locked');t.locked=false},LOCK_MS)}}
+for(const k of['L','R'])$('#a'+k).addEventListener('pointerdown',e=>onTap(k,e));
+function win(k){over=true;const o=k==='L'?'R':'L';$('#winText').textContent=T[k].name+' win!';$('#winSub').textContent=`${T[k].name} ${T[k].score}, ${T[o].name} ${T[o].score}`;
+ setTimeout(()=>{$('#win').classList.remove('hide');burst(innerWidth/2,innerHeight/2,200);tone([523,659,784,1047,1319],.11,'triangle',0);say(T[k].name+' reach the summit first!')},500)}
+
+/* confetti */
+const cv=$('#fx'),g=cv.getContext('2d');let parts=[],raf=0;
+const fit=()=>{const d=devicePixelRatio||1;cv.width=innerWidth*d;cv.height=innerHeight*d;g.setTransform(d,0,0,d,0,0)};fit();addEventListener('resize',fit);
+const CONF=['#e8692b','#f6c344','#2e9e55','#2f7cf6','#a597c9','#fff1d6'];
+function burst(x,y,n){if(calm)return;for(let i=0;i<n;i++){const a=Math.random()*Math.PI*2,v=4+Math.random()*10;parts.push({x,y,vx:Math.cos(a)*v,vy:Math.sin(a)*v-7,c:pick(CONF),s:7+Math.random()*9,r:Math.random()*6,life:90})}if(!raf)raf=requestAnimationFrame(tick)}
+function tick(){g.clearRect(0,0,innerWidth,innerHeight);parts=parts.filter(p=>p.life-->0);for(const p of parts){p.vy+=.35;p.x+=p.vx;p.y+=p.vy;p.r+=.15;g.save();g.translate(p.x,p.y);g.rotate(p.r);g.globalAlpha=Math.min(1,p.life/30);g.fillStyle=p.c;g.fillRect(-p.s/2,-p.s/4,p.s,p.s/2);g.restore()}raf=parts.length?requestAnimationFrame(tick):0}
+const burstEl=(el,n)=>{const r=el.getBoundingClientRect();burst(r.left+r.width/2,r.top+r.height/2,n)};
+
+/* touch test: shows every finger the browser can see at once */
+const active=new Map();let best=0,kind='';
+function drawDots(){const el=$('#test');el.querySelectorAll('.dot').forEach(d=>d.remove());let i=0;for(const[,p]of active){i++;const d=document.createElement('div');d.className='dot';d.style.left=p.x+'px';d.style.top=p.y+'px';d.textContent=i;el.appendChild(d)}
+ $('#tc').textContent=active.size;if(active.size>best)best=active.size;
+ $('#tbest').textContent=best>=2?`Most at once: ${best}. Two team races will work on this board.`:kind==='mouse'?'The board is sending mouse clicks, not touches. Switch the projector to PC interactive mode with touch, or check the USB cable to the computer.':'Most at once: '+best+'. Have two kids touch the board at the same time.'}
+const tEl=$('#test');
+tEl.addEventListener('pointerdown',e=>{if(e.target.closest('.done'))return;kind=e.pointerType;active.set(e.pointerId,{x:e.clientX,y:e.clientY});drawDots();tone([300+active.size*80],.06,'triangle',0)});
+tEl.addEventListener('pointermove',e=>{if(active.has(e.pointerId)){active.set(e.pointerId,{x:e.clientX,y:e.clientY});drawDots()}});
+for(const ev of['pointerup','pointercancel','pointerleave'])tEl.addEventListener(ev,e=>{active.delete(e.pointerId);drawDots()});
+
+/* menu */
+const setLevel=l=>{level=l;try{localStorage.setItem('race-level',l)}catch(e){}document.querySelectorAll('.levels button').forEach(b=>b.setAttribute('aria-pressed',+b.dataset.l===l))};setLevel(level);
+document.querySelector('.levels').addEventListener('click',e=>{const b=e.target.closest('button');if(b)setLevel(+b.dataset.l)});
+$('#start').onclick=start;$('#again').onclick=start;$('#toMenu').onclick=toMenu;$('#quit').onclick=toMenu;
+$('#testBtn').onclick=()=>{best=0;active.clear();tEl.classList.remove('hide');drawDots()};
+$('#testDone').onclick=()=>{tEl.classList.add('hide')};
+addEventListener('contextmenu',e=>e.preventDefault());
+}
+</script>
+</body>
+</html>
