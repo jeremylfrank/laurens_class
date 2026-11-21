@@ -1,0 +1,33 @@
+name: Keep Supabase awake
+
+# Supabase pauses free projects after about a week with no use (school breaks).
+# This calls a tiny function that reads no data, twice a week.
+# Needs two repository secrets: SUPABASE_URL and SUPABASE_ANON_KEY (Settings > Secrets > Actions).
+# Note: GitHub turns scheduled workflows off after 60 days with no commits. If that happens,
+# see "If Supabase pauses" in the README.
+
+on:
+  schedule:
+    - cron: "23 14 * * 1,4"
+  workflow_dispatch:
+
+permissions: {}
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Ping
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+        run: |
+          if [ -z "$SUPABASE_URL" ] || [ -z "$SUPABASE_ANON_KEY" ]; then
+            echo "Secrets not set yet; skipping."
+            exit 0
+          fi
+          curl -fsS -X POST "$SUPABASE_URL/rest/v1/rpc/ping" \
+            -H "apikey: $SUPABASE_ANON_KEY" \
+            -H "Authorization: Bearer $SUPABASE_ANON_KEY" \
+            -H "Content-Type: application/json" -d '{}'

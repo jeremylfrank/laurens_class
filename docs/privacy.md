@@ -3,21 +3,21 @@
 This file must list every piece of data the app stores. Any PR that adds a field updates
 this file in the same PR.
 
-## Today (step 2): on the board only
+## On the board
 
 Everything below lives in the browser storage of the board's computer (keys start with
-`classcade:`). Nothing is sent anywhere. There are no cookies, no analytics and no third
+`classcade:`). Only results and board settings are sent, and only to the signed in teacher's account. There are no cookies, no analytics and no third
 party requests; the Content Security Policy blocks connections to other sites.
 
-| Key             | What it holds                                                                                                                                                                                              | Why                                                                                             |
-| --------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------- |
-| `settings`      | Board title (max 40 characters), sound on/off, slow voice, team mode on/off, two team names (max 14 characters each)                                                                                       | Teacher settings                                                                                |
-| `progress`      | Trail stop (0 to 9), badge count, two team scores                                                                                                                                                          | The class's shared reward                                                                       |
-| `levels`        | For each game mode: current level, the last few right/wrong results (true/false), the last day played                                                                                                      | Adaptive difficulty for the whole class                                                         |
-| `review`        | For each game mode: up to 20 missed problems (numbers only, e.g. 38 + 25), when each comes back, and how many times it has been answered right since                                                       | Missed items come back                                                                          |
-| `rounds:<mode>` | A count of rounds played                                                                                                                                                                                   | Timing for when missed items come back                                                          |
-| `mode:<game>`   | Which mode was last picked                                                                                                                                                                                 | Convenience                                                                                     |
-| `attempts`      | One row per tap: time, a random session id, game, mode, play style (board, teams, split), the problem (e.g. `add:38+25`), the standard, right or wrong, the mistake if wrong, and team 0 or 1 in team play | The teacher page in step 3. Kept at most 13 months and at most 3,000 rows, oldest removed first |
+| Key             | What it holds                                                                                                                                                                                              | Why                                                                                                                                                |
+| --------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `settings`      | Board title (max 40 characters), sound on/off, slow voice, team mode on/off, two team names (max 14 characters each)                                                                                       | Teacher settings                                                                                                                                   |
+| `progress`      | Trail stop (0 to 9), badge count, two team scores                                                                                                                                                          | The class's shared reward                                                                                                                          |
+| `levels`        | For each game mode: current level, the last few right/wrong results (true/false), the last day played                                                                                                      | Adaptive difficulty for the whole class                                                                                                            |
+| `review`        | For each game mode: up to 20 missed problems (numbers only, e.g. 38 + 25), when each comes back, and how many times it has been answered right since                                                       | Missed items come back                                                                                                                             |
+| `rounds:<mode>` | A count of rounds played                                                                                                                                                                                   | Timing for when missed items come back                                                                                                             |
+| `mode:<game>`   | Which mode was last picked                                                                                                                                                                                 | Convenience                                                                                                                                        |
+| `attempts`      | One row per tap: time, a random session id, game, mode, play style (board, teams, split), the problem (e.g. `add:38+25`), the standard, right or wrong, the mistake if wrong, and team 0 or 1 in team play | Waiting to be saved to the teacher's account; removed from the board once saved. If nobody signs in, kept at most 13 months and at most 3,000 rows |
 
 **No names of students are stored anywhere.** Results belong to the class or to a team.
 
@@ -39,19 +39,31 @@ otherwise (see plan.md, section 3).
 
 ### In the database (Supabase, step 3)
 
-| Table            | Fields                                                                                                                               | Why                                                                                |
-| ---------------- | ------------------------------------------------------------------------------------------------------------------------------------ | ---------------------------------------------------------------------------------- |
-| `teachers`       | id, email, display name, created                                                                                                     | Sign in. Only allowlisted emails can create an account.                            |
-| `classrooms`     | id, teacher_id, name, theme, settings                                                                                                | One teacher can have more than one class later.                                    |
-| `students`       | id, classroom_id, teacher_id, first name (max 20), optional last initial                                                             | Only if Lauren chooses to sync the class list. Nothing else about a student, ever. |
-| `custom_content` | id, classroom_id, teacher_id, game, type, payload                                                                                    | Lauren's spelling lists and questions.                                             |
-| `sessions`       | id, classroom_id, teacher_id, game, mode, started                                                                                    | Groups results for the "this week" page.                                           |
-| `item_attempts`  | id, session_id, classroom_id, teacher_id, item key, skill/standard, correct, mistake type, team (optional), student (optional), time | Shows which skills and mistakes need work.                                         |
+Only when someone signs in. Defined in `supabase/migrations/0001_init.sql`.
 
-Rules:
+| Table            | Fields                                                                                                                                                  | Why                                                                                                    |
+| ---------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------ |
+| `allowed_emails` | email, role (teacher or admin), created                                                                                                                 | Only these Google accounts can sign in                                                                 |
+| `teachers`       | id, email, display name (optional, max 60), admin yes/no, created                                                                                       | The signed in teacher                                                                                  |
+| `classrooms`     | id, teacher, name (max 60), theme, board settings (title, sound, slow voice, team mode, team names), when settings changed, created                     | One class per teacher for now                                                                          |
+| `students`       | id, class, teacher, first name (max 20), optional last initial                                                                                          | **Not used.** The class list stays on the board (plan.md, section 3). Kept so the data model is ready. |
+| `custom_content` | id, class, teacher, game, type, content, created, updated                                                                                               | Lauren's own word lists and questions (later games)                                                    |
+| `sessions`       | id, class, teacher, game, mode, play style, started                                                                                                     | Groups results                                                                                         |
+| `item_attempts`  | id, session, class, teacher, problem (e.g. `add:38+25`), standard, right/wrong, mistake if wrong, team 0/1 (optional), student (optional, unused), time | The "this week" page                                                                                   |
 
-- Row level security on every table: a teacher can read and write only rows with their own `teacher_id`.
-- No student accounts, no student logins. Students never type anything personal.
-- No names in logs or error reports.
-- Hard delete for one student, one class, or the whole teacher account.
-- `item_attempts` older than 13 months are deleted automatically by a nightly job.
+Who can see what (row level security, proven by `supabase/tests/rls.test.ts`):
+
+- A teacher reads and writes only their own rows.
+- **An admin can read every teacher's rows (read only)**, and manage the allowlist. Any
+  teacher who joins should be told this.
+- Signed out visitors can read nothing. They can only call `ping()`, which returns 1.
+- Removing an email from the allowlist cuts off that person's access immediately.
+
+Deleting:
+
+- Teacher page > **Delete all class results**: removes every session and result.
+- Teacher page > **Delete my account**: removes the account, class, settings and results.
+- Results older than 13 months are deleted every night (`0002_retention.sql`).
+- Supabase keeps its own short term backups on the free plan (about a day or a week depending on plan). Deleted data ages out of those on Supabase's schedule.
+
+Sign in: Google tells Supabase the teacher's email address and name. Only the email is stored in our tables. Supabase's own `auth.users` table also keeps the email and sign in times.
